@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
 
 const Settings: React.FC = () => {
   const { toast } = useToast();

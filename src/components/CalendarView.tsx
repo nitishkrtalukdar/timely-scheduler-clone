@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Post } from '@/components/PostCard';
 import { Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
+import { DayProps } from 'react-day-picker';
 
 interface CalendarViewProps {
   posts: Post[];
@@ -21,7 +22,13 @@ const platformIcons = {
 
 const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, selectedDate }) => {
   // Function to customize the day in the calendar
-  const renderDay = (day: Date) => {
+  const renderDay = (props: DayProps) => {
+    // Return default day rendering if date is undefined
+    if (!props.date) {
+      return <span>{props.day}</span>;
+    }
+
+    const day = props.date;
     const postsOnDay = posts.filter((post) => isSameDay(new Date(post.scheduledDate), day));
     
     const platformsOnDay = postsOnDay.reduce<Record<string, boolean>>((acc, post) => {
@@ -33,7 +40,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, select
     
     return (
       <div className="relative w-full h-full flex flex-col items-center">
-        <span className="text-center">{format(day, 'd')}</span>
+        <span className="text-center">{day.getDate()}</span>
         {postsOnDay.length > 0 && (
           <div className="flex mt-1 gap-1">
             {platformList.map((platform) => (
@@ -53,7 +60,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, select
         mode="single"
         selected={selectedDate}
         onSelect={(date) => date && onSelectDate(date)}
-        className="rounded-md border"
+        className="rounded-md border pointer-events-auto"
         components={{ Day: renderDay }}
       />
     </Card>
