@@ -59,7 +59,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, select
         onSelect={(date) => date && onSelectDate(date)}
         className="rounded-md border pointer-events-auto"
         components={{
-          Day: ({ day }) => day ? renderDay(day) : null
+          Day: ({ date }) => date ? renderDay(date) : null
         }}
       />
     </Card>

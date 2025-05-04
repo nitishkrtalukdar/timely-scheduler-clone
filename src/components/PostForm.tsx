@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Twitter, Instagram, Facebook, Linkedin, Upload, Loader2 } from 'lucide-react';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Calendar as CalendarIcon, Clock, Twitter, Instagram, Facebook, Linkedin, Upload, Loader2 } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 
 interface PostFormProps {
   onSubmit: (data: {
@@ -22,9 +25,23 @@ interface PostFormProps {
 const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
   const [content, setContent] = useState('');
   const [platform, setPlatform] = useState<'twitter' | 'instagram' | 'facebook' | 'linkedin'>('twitter');
-  const [date, setDate] = useState<Date>(new Date());
-  const [media, setMedia] = useState<File[]>([]);
+  
+  // Date and time state
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [timeHours, setTimeHours] = useState<number>(new Date().getHours());
+  const [timeMinutes, setTimeMinutes] = useState<number>(new Date().getMinutes());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  
+  const [media, setMedia] = useState<File[]>([]);
+  
+  // Combine date and time into one Date object
+  const getScheduledDateTime = () => {
+    const scheduledDateTime = new Date(selectedDate);
+    scheduledDateTime.setHours(timeHours);
+    scheduledDateTime.setMinutes(timeMinutes);
+    return scheduledDateTime;
+  };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -45,11 +62,11 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
       return;
     }
     
-    // Create a post object
+    // Create a post object with the combined date and time
     const postData = {
       content,
       platform,
-      scheduledDate: date,
+      scheduledDate: getScheduledDateTime(),
       media,
     };
     
@@ -91,7 +108,14 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
   // Make sure we have a valid platform
   const currentPlatform = platform in platformConfigs ? platform : 'twitter';
   const currentConfig = platformConfigs[currentPlatform];
-  const Icon = currentConfig.icon;
+  
+  // Format hours for display (12-hour format with AM/PM)
+  const formatTimeForDisplay = () => {
+    const hours = timeHours % 12 || 12;
+    const minutes = timeMinutes.toString().padStart(2, '0');
+    const period = timeHours >= 12 ? 'PM' : 'AM';
+    return `${hours}:${minutes} ${period}`;
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -163,7 +187,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
             </div>
           )}
 
-          <div className="flex justify-between">
+          <div className="flex justify-between flex-wrap gap-2">
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -195,17 +219,17 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
                     className="flex gap-1"
                     disabled={disabled}
                   >
-                    <Calendar className="h-4 w-4" />
-                    <span>{format(date, 'MMM d, h:mm a')}</span>
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{format(selectedDate, 'MMM d, yyyy')}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
+                  <Calendar
                     mode="single"
-                    selected={date}
+                    selected={selectedDate}
                     onSelect={(newDate) => {
                       if (newDate) {
-                        setDate(newDate);
+                        setSelectedDate(newDate);
                         setShowCalendar(false);
                       }
                     }}
@@ -213,6 +237,75 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
                     className="pointer-events-auto"
                     disabled={disabled}
                   />
+                </PopoverContent>
+              </Popover>
+
+              <Popover open={showTimePicker} onOpenChange={setShowTimePicker}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex gap-1"
+                    disabled={disabled}
+                  >
+                    <Clock className="h-4 w-4" />
+                    <span>{formatTimeForDisplay()}</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="hours">Hour</Label>
+                      <Slider
+                        id="hours"
+                        min={0}
+                        max={23}
+                        step={1}
+                        value={[timeHours]}
+                        onValueChange={(value) => setTimeHours(value[0])}
+                        className="mt-2"
+                      />
+                      <div className="text-center mt-1">{timeHours.toString().padStart(2, '0')}</div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="minutes">Minute</Label>
+                      <Slider
+                        id="minutes"
+                        min={0}
+                        max={59}
+                        step={1}
+                        value={[timeMinutes]}
+                        onValueChange={(value) => setTimeMinutes(value[0])}
+                        className="mt-2"
+                      />
+                      <div className="text-center mt-1">{timeMinutes.toString().padStart(2, '0')}</div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const now = new Date();
+                          setTimeHours(now.getHours());
+                          setTimeMinutes(now.getMinutes());
+                        }}
+                      >
+                        Set to Now
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="default"
+                        size="sm"
+                        onClick={() => setShowTimePicker(false)}
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
