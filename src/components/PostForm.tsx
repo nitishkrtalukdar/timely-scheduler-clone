@@ -3,12 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Twitter, Instagram, Facebook, Linkedin, Upload, Plus } from 'lucide-react';
+import { Calendar, Twitter, Instagram, Facebook, Linkedin, Upload, Loader2 } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { cn } from '@/lib/utils';
 
 interface PostFormProps {
   onSubmit: (data: {
@@ -17,9 +16,10 @@ interface PostFormProps {
     scheduledDate: Date;
     media: File[];
   }) => void;
+  disabled?: boolean;
 }
 
-const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
+const PostForm: React.FC<PostFormProps> = ({ onSubmit, disabled = false }) => {
   const [content, setContent] = useState('');
   const [platform, setPlatform] = useState<'twitter' | 'instagram' | 'facebook' | 'linkedin'>('twitter');
   const [date, setDate] = useState<Date>(new Date());
@@ -98,7 +98,12 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
       <Card className="mb-6">
         <CardContent className="pt-4">
           <div className="mb-4">
-            <ToggleGroup type="single" value={platform} onValueChange={(value) => setPlatform(value as any)}>
+            <ToggleGroup 
+              type="single" 
+              value={platform} 
+              onValueChange={(value) => setPlatform(value as any)}
+              disabled={disabled}
+            >
               <ToggleGroupItem value="twitter" aria-label="Twitter">
                 <Twitter className="h-4 w-4" />
               </ToggleGroupItem>
@@ -121,6 +126,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               maxLength={currentConfig.maxChars}
+              disabled={disabled}
             />
             <div className="text-right text-xs text-gray-500 mt-1">
               {content.length}/{currentConfig.maxChars}
@@ -148,6 +154,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
                     size="sm"
                     className="absolute top-0 right-0 h-5 w-5 p-0 rounded-full"
                     onClick={() => removeMedia(index)}
+                    disabled={disabled}
                   >
                     &times;
                   </Button>
@@ -164,6 +171,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
                 size="sm"
                 className="flex gap-1"
                 onClick={() => document.getElementById('file-upload')?.click()}
+                disabled={disabled}
               >
                 <Upload className="h-4 w-4" />
                 <span>Upload</span>
@@ -175,11 +183,18 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
                 accept={currentConfig.mediaTypes}
                 onChange={handleFileChange}
                 className="hidden"
+                disabled={disabled}
               />
 
               <Popover open={showCalendar} onOpenChange={setShowCalendar}>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" size="sm" className="flex gap-1">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex gap-1"
+                    disabled={disabled}
+                  >
                     <Calendar className="h-4 w-4" />
                     <span>{format(date, 'MMM d, h:mm a')}</span>
                   </Button>
@@ -196,6 +211,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
                     }}
                     initialFocus
                     className="pointer-events-auto"
+                    disabled={disabled}
                   />
                 </PopoverContent>
               </Popover>
@@ -204,8 +220,16 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
             <Button
               type="submit"
               className="bg-timely-purple hover:bg-timely-dark-purple"
+              disabled={disabled}
             >
-              Schedule
+              {disabled ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Scheduling...
+                </>
+              ) : (
+                'Schedule'
+              )}
             </Button>
           </div>
         </CardContent>

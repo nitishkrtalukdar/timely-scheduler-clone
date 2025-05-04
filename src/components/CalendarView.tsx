@@ -25,7 +25,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, select
   const renderDay = (props: DayProps) => {
     // Return default day rendering if date is undefined
     if (!props.date) {
-      return props.day;
+      return <>{props.children}</>;
     }
     
     const day = props.date;

@@ -1,19 +1,25 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
 import { useToast } from '@/components/ui/use-toast';
 import { usePostStore } from '@/stores/postStore';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 
 const Scheduled: React.FC = () => {
-  const { posts } = usePostStore();
+  const { posts, fetchPosts, loading } = usePostStore();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPosts();
+    }
+  }, [fetchPosts, isAuthenticated]);
 
   const handlePostClick = (post: any) => {
     toast({
@@ -54,7 +60,12 @@ const Scheduled: React.FC = () => {
             </Button>
           </div>
           
-          {posts.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-timely-purple" />
+              <span className="ml-2">Loading posts...</span>
+            </div>
+          ) : posts.length > 0 ? (
             posts.map((post) => (
               <PostCard key={post.id} post={post} onClick={handlePostClick} />
             ))
