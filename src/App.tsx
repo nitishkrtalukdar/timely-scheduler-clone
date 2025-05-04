@@ -13,6 +13,9 @@ import ChannelView from "./pages/ChannelView";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import { useAuthStore } from "./stores/authStore";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +23,10 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
   
-  if (!isAuthenticated) {
+  // In development, allow access even if not authenticated
+  const isDev = import.meta.env.DEV;
+  
+  if (!isAuthenticated && !isDev) {
     return <Navigate to="/login" replace />;
   }
   
@@ -28,6 +34,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  useEffect(() => {
+    // Show a toast if Supabase is not configured
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Supabase not configured",
+        description: "Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables. Using local storage for now.",
+        duration: 5000,
+      });
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

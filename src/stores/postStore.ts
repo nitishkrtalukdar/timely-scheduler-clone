@@ -26,10 +26,9 @@ export const usePostStore = create<PostStore>()(
         try {
           // Check if Supabase is configured properly
           if (!isSupabaseConfigured()) {
-            set({ 
-              error: "Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.",
-              loading: false
-            });
+            console.warn("Supabase is not configured. Using local storage only.");
+            // Don't set error here, just log a warning to allow local storage fallback
+            set({ loading: false });
             return;
           }
           

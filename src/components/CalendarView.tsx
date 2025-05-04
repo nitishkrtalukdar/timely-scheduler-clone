@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { Post } from '@/components/PostCard';
 import { Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
 import { isSameDay } from 'date-fns';
-import { DayClickEventHandler } from 'react-day-picker';
 
 interface CalendarViewProps {
   posts: Post[];
@@ -22,7 +21,7 @@ const platformIcons = {
 
 const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, selectedDate }) => {
   // Custom day content renderer
-  const renderDay = (day: Date, modifiers: Record<string, boolean> | undefined) => {
+  const renderDay = (day: Date) => {
     if (!day) {
       return <div />;
     }
@@ -60,7 +59,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ posts, onSelectDate, select
         onSelect={(date) => date && onSelectDate(date)}
         className="rounded-md border pointer-events-auto"
         components={{
-          Day: ({ date, displayMonth }) => date ? renderDay(date, {}) : null
+          Day: ({ day }) => day ? renderDay(day) : null
         }}
       />
     </Card>

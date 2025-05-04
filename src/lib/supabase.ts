@@ -5,10 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
-// Create a Supabase client with fallback values to prevent runtime errors
+// Create a Supabase client with dummy values when real ones are not available
+// This prevents runtime errors but will return empty results
 export const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey,
+  supabaseUrl || "https://placeholder-url.supabase.co",
+  supabaseAnonKey || "placeholder-key",
   {
     auth: {
       persistSession: true
