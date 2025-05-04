@@ -16,6 +16,17 @@ import { useAuthStore } from "./stores/authStore";
 
 const queryClient = new QueryClient();
 
+// ProtectedRoute component to guard routes requiring authentication
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuthStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -26,29 +37,39 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={
-              <Layout>
-                <Scheduled />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Scheduled />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/calendar" element={
-              <Layout>
-                <CalendarPage />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <CalendarPage />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/create" element={
-              <Layout>
-                <CreatePost />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <CreatePost />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <Layout>
-                <Settings />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Settings />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/channels/:platform" element={
-              <Layout>
-                <ChannelView />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <ChannelView />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>

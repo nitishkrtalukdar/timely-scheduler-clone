@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { usePostStore } from '@/stores/postStore';
+import { Post } from '@/components/PostCard';
 
 const CreatePost: React.FC = () => {
   const { toast } = useToast();
@@ -24,16 +25,16 @@ const CreatePost: React.FC = () => {
     const mediaItems = data.media.map(file => ({
       type: file.type.startsWith('image/') ? 'image' : 'video',
       url: URL.createObjectURL(file),
-    }));
+    })) as Array<{type: 'image' | 'video'; url: string}>;
     
     // Create a new post
-    const newPost = {
+    const newPost: Post = {
       id: uuidv4(),
       content: data.content,
       scheduledDate: data.scheduledDate,
       platform: data.platform,
       media: mediaItems.length > 0 ? mediaItems : undefined,
-      status: 'scheduled' as const,
+      status: 'scheduled',
     };
     
     // Add post to store
