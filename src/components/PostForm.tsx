@@ -75,7 +75,9 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
     },
   };
 
-  const currentConfig = platformConfigs[platform];
+  // Make sure we have a valid platform
+  const currentPlatform = platform in platformConfigs ? platform : 'twitter';
+  const currentConfig = platformConfigs[currentPlatform];
   const Icon = currentConfig.icon;
 
   return (
