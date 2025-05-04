@@ -1,12 +1,12 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Post } from '@/components/PostCard';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface PostStore {
   posts: Post[];
   loading: boolean;
+  error: string | null;
   addPost: (post: Post) => Promise<void>;
   fetchPosts: () => Promise<void>;
   removePost: (postId: string) => Promise<void>;
@@ -19,10 +19,20 @@ export const usePostStore = create<PostStore>()(
     (set, get) => ({
       posts: [],
       loading: false,
+      error: null,
       
       fetchPosts: async () => {
-        set({ loading: true });
+        set({ loading: true, error: null });
         try {
+          // Check if Supabase is configured properly
+          if (!isSupabaseConfigured()) {
+            set({ 
+              error: "Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.",
+              loading: false
+            });
+            return;
+          }
+          
           const { data, error } = await supabase
             .from('posts')
             .select('*')
@@ -30,6 +40,7 @@ export const usePostStore = create<PostStore>()(
             
           if (error) {
             console.error('Error fetching posts:', error);
+            set({ error: error.message });
             return;
           }
           
@@ -46,13 +57,21 @@ export const usePostStore = create<PostStore>()(
           set({ posts: formattedPosts });
         } catch (err) {
           console.error('Failed to fetch posts:', err);
+          set({ error: err instanceof Error ? err.message : 'An unknown error occurred' });
         } finally {
           set({ loading: false });
         }
       },
       
       addPost: async (post) => {
+        set({ error: null });
         try {
+          // Check if Supabase is configured properly
+          if (!isSupabaseConfigured()) {
+            set({ error: "Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables." });
+            return;
+          }
+          
           // Format post for Supabase
           const supabasePost = {
             id: post.id,
@@ -69,6 +88,7 @@ export const usePostStore = create<PostStore>()(
             
           if (error) {
             console.error('Error adding post:', error);
+            set({ error: error.message });
             return;
           }
           
@@ -77,11 +97,19 @@ export const usePostStore = create<PostStore>()(
           }));
         } catch (err) {
           console.error('Failed to add post:', err);
+          set({ error: err instanceof Error ? err.message : 'An unknown error occurred' });
         }
       },
       
       removePost: async (postId) => {
+        set({ error: null });
         try {
+          // Check if Supabase is configured properly
+          if (!isSupabaseConfigured()) {
+            set({ error: "Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables." });
+            return;
+          }
+          
           const { error } = await supabase
             .from('posts')
             .delete()
@@ -89,6 +117,7 @@ export const usePostStore = create<PostStore>()(
             
           if (error) {
             console.error('Error removing post:', error);
+            set({ error: error.message });
             return;
           }
           
@@ -97,6 +126,7 @@ export const usePostStore = create<PostStore>()(
           }));
         } catch (err) {
           console.error('Failed to remove post:', err);
+          set({ error: err instanceof Error ? err.message : 'An unknown error occurred' });
         }
       },
       
