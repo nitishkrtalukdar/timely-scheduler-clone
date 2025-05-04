@@ -2,54 +2,39 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import CalendarView from '@/components/CalendarView';
-import PostCard, { Post } from '@/components/PostCard';
-import { addDays, addHours, isSameDay } from 'date-fns';
-
-// Mock data for scheduled posts (same as in Scheduled page)
-const MOCK_POSTS: Post[] = [
-  {
-    id: '1',
-    content: 'Excited to announce our new product launch! #TimeLy #ProductLaunch',
-    scheduledDate: addHours(new Date(), 2),
-    platform: 'twitter',
-    status: 'scheduled',
-  },
-  {
-    id: '2',
-    content: 'Check out our latest blog post about social media scheduling best practices.',
-    scheduledDate: addDays(new Date(), 1),
-    platform: 'facebook',
-    media: [
-      { type: 'image', url: '/placeholder.svg' },
-    ],
-    status: 'scheduled',
-  },
-  {
-    id: '3',
-    content: 'Looking for the perfect social media scheduler? TimeLy makes it easy to plan and schedule your content across all platforms!',
-    scheduledDate: addDays(new Date(), 2),
-    platform: 'linkedin',
-    status: 'scheduled',
-  },
-  {
-    id: '4',
-    content: 'Beautiful sunset from our office today. #views #officespace',
-    scheduledDate: addHours(new Date(), 1),
-    platform: 'instagram',
-    media: [
-      { type: 'image', url: '/placeholder.svg' },
-    ],
-    status: 'scheduled',
-  },
-];
+import PostCard from '@/components/PostCard';
+import { isSameDay } from 'date-fns';
+import { usePostStore } from '@/stores/postStore';
+import { useAuthStore } from '@/stores/authStore';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const CalendarPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
+  const { posts } = usePostStore();
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   
   const postsOnSelectedDate = posts.filter(post => 
     isSameDay(new Date(post.scheduledDate), selectedDate)
   );
+
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen flex flex-col">
+        <Header title="Calendar" />
+        <main className="flex-1 p-6 overflow-auto bg-gray-50">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-semibold mb-4">Calendar View</h2>
+            <p className="text-gray-600 mb-8">Please sign in to view your scheduled posts</p>
+            <Button onClick={() => navigate('/login')} className="bg-timely-purple hover:bg-timely-dark-purple">
+              Sign In
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col">

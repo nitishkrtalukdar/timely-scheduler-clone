@@ -7,9 +7,15 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { useAuthStore } from '@/stores/authStore';
+import { useChannelStore } from '@/stores/channelStore';
+import { useNavigate } from 'react-router-dom';
 
 const Settings: React.FC = () => {
   const { toast } = useToast();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const { connectedChannels, disconnectChannel } = useChannelStore();
+  const navigate = useNavigate();
   
   const handleSave = () => {
     toast({
@@ -18,11 +24,59 @@ const Settings: React.FC = () => {
     });
   };
 
+  const handleDisconnect = (platform: string) => {
+    disconnectChannel(platform);
+    toast({
+      title: "Account disconnected",
+      description: `Your ${platform} account has been disconnected.`,
+    });
+  };
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+  
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen flex flex-col">
+        <Header title="Settings" />
+        <main className="flex-1 p-6 overflow-auto bg-gray-50">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-semibold mb-4">Settings</h2>
+            <p className="text-gray-600 mb-8">Please sign in to access your settings</p>
+            <Button onClick={() => navigate('/login')} className="bg-timely-purple hover:bg-timely-dark-purple">
+              Sign In
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col">
       <Header title="Settings" />
       <main className="flex-1 p-6 overflow-auto bg-gray-50">
         <div className="max-w-3xl mx-auto">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>Manage your TimeLy account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{user?.name}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>Sign Out</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
@@ -60,10 +114,30 @@ const Settings: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium">Twitter</p>
-                      <p className="text-sm text-gray-500">@timelyapp</p>
+                      {connectedChannels.includes('twitter') ? (
+                        <p className="text-sm text-gray-500">@{user?.name.toLowerCase()}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Not connected</p>
+                      )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Disconnect</Button>
+                  {connectedChannels.includes('twitter') ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDisconnect('twitter')}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/channels/twitter')}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -72,10 +146,30 @@ const Settings: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium">Instagram</p>
-                      <p className="text-sm text-gray-500">@timelyapp</p>
+                      {connectedChannels.includes('instagram') ? (
+                        <p className="text-sm text-gray-500">@{user?.name.toLowerCase()}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Not connected</p>
+                      )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Disconnect</Button>
+                  {connectedChannels.includes('instagram') ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDisconnect('instagram')}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/channels/instagram')}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -84,10 +178,30 @@ const Settings: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium">Facebook</p>
-                      <p className="text-sm text-gray-500">TimeLy Page</p>
+                      {connectedChannels.includes('facebook') ? (
+                        <p className="text-sm text-gray-500">TimeLy Page</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Not connected</p>
+                      )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Disconnect</Button>
+                  {connectedChannels.includes('facebook') ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDisconnect('facebook')}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/channels/facebook')}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -96,10 +210,30 @@ const Settings: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium">LinkedIn</p>
-                      <p className="text-sm text-gray-500">TimeLy Company</p>
+                      {connectedChannels.includes('linkedin') ? (
+                        <p className="text-sm text-gray-500">TimeLy Company</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Not connected</p>
+                      )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Disconnect</Button>
+                  {connectedChannels.includes('linkedin') ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDisconnect('linkedin')}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/channels/linkedin')}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>

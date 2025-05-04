@@ -4,10 +4,13 @@ import Header from '@/components/Header';
 import PostForm from '@/components/PostForm';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import { usePostStore } from '@/stores/postStore';
 
 const CreatePost: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { addPost } = usePostStore();
   
   const handleSubmit = (data: {
     content: string;
@@ -16,7 +19,25 @@ const CreatePost: React.FC = () => {
     media: File[];
   }) => {
     console.log('Post data:', data);
-    // In a real app, this would send the data to an API
+    
+    // Convert File objects to media items
+    const mediaItems = data.media.map(file => ({
+      type: file.type.startsWith('image/') ? 'image' : 'video',
+      url: URL.createObjectURL(file),
+    }));
+    
+    // Create a new post
+    const newPost = {
+      id: uuidv4(),
+      content: data.content,
+      scheduledDate: data.scheduledDate,
+      platform: data.platform,
+      media: mediaItems.length > 0 ? mediaItems : undefined,
+      status: 'scheduled' as const,
+    };
+    
+    // Add post to store
+    addPost(newPost);
     
     toast({
       title: "Success!",

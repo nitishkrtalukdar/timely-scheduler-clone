@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Twitter, Instagram, Facebook, Linkedin, Upload, Plus } from 'lucide-react';
@@ -40,12 +39,26 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
+    
+    if (!content.trim()) {
+      alert('Please enter some content for your post');
+      return;
+    }
+    
+    // Create a post object
+    const postData = {
       content,
       platform,
       scheduledDate: date,
       media,
-    });
+    };
+    
+    console.log('Post data:', postData);
+    onSubmit(postData);
+    
+    // Reset form after submission
+    setContent('');
+    setMedia([]);
   };
 
   const platformConfigs = {
@@ -182,6 +195,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit }) => {
                       }
                     }}
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>

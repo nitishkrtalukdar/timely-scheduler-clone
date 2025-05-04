@@ -1,67 +1,74 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Header from '@/components/Header';
-import PostCard, { Post } from '@/components/PostCard';
+import PostCard from '@/components/PostCard';
 import { useToast } from '@/components/ui/use-toast';
-import { addDays, addHours } from 'date-fns';
-
-// Mock data for scheduled posts
-const MOCK_POSTS: Post[] = [
-  {
-    id: '1',
-    content: 'Excited to announce our new product launch! #TimeLy #ProductLaunch',
-    scheduledDate: addHours(new Date(), 2),
-    platform: 'twitter',
-    status: 'scheduled',
-  },
-  {
-    id: '2',
-    content: 'Check out our latest blog post about social media scheduling best practices.',
-    scheduledDate: addDays(new Date(), 1),
-    platform: 'facebook',
-    media: [
-      { type: 'image', url: '/placeholder.svg' },
-    ],
-    status: 'scheduled',
-  },
-  {
-    id: '3',
-    content: 'Looking for the perfect social media scheduler? TimeLy makes it easy to plan and schedule your content across all platforms!',
-    scheduledDate: addDays(new Date(), 2),
-    platform: 'linkedin',
-    status: 'scheduled',
-  },
-  {
-    id: '4',
-    content: 'Beautiful sunset from our office today. #views #officespace',
-    scheduledDate: addHours(new Date(), 1),
-    platform: 'instagram',
-    media: [
-      { type: 'image', url: '/placeholder.svg' },
-    ],
-    status: 'scheduled',
-  },
-];
+import { usePostStore } from '@/stores/postStore';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
 
 const Scheduled: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
+  const { posts } = usePostStore();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
 
-  const handlePostClick = (post: Post) => {
+  const handlePostClick = (post: any) => {
     toast({
       title: `Post for ${post.platform}`,
       description: `Scheduled for ${new Date(post.scheduledDate).toLocaleString()}`,
     });
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen flex flex-col">
+        <Header title="Scheduled Posts" />
+        <main className="flex-1 p-6 overflow-auto bg-gray-50">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-semibold mb-4">Welcome to TimeLy</h2>
+            <p className="text-gray-600 mb-8">Please sign in to view your scheduled posts</p>
+            <Button onClick={() => navigate('/login')} className="bg-timely-purple hover:bg-timely-dark-purple">
+              Sign In
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col">
       <Header title="Scheduled Posts" />
       <main className="flex-1 p-6 overflow-auto bg-gray-50">
         <div className="max-w-3xl mx-auto">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} onClick={handlePostClick} />
-          ))}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Your Scheduled Posts</h2>
+            <Button 
+              onClick={() => navigate('/create')} 
+              className="bg-timely-purple hover:bg-timely-dark-purple"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Create Post
+            </Button>
+          </div>
+          
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <PostCard key={post.id} post={post} onClick={handlePostClick} />
+            ))
+          ) : (
+            <div className="text-center py-12 border border-dashed border-gray-300 rounded-lg">
+              <p className="text-gray-600 mb-4">No posts scheduled yet</p>
+              <Button 
+                onClick={() => navigate('/create')} 
+                className="bg-timely-purple hover:bg-timely-dark-purple"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Create Your First Post
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>
